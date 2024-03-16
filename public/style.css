@@ -14,3 +14,11 @@
 .MuiStack-root:first-child div > a.MuiButton-textPrimary{
      display: none;
 }
+
+[aria-label="Copy"]{
+     display: none !important;
+}
+
+button[role="presentation"] {
+     display: none !important;
+}
