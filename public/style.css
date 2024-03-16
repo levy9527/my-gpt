@@ -1,0 +1,12 @@
+.watermark {display: none !important;}
+
+.MuiStack-root > img{
+    visibility: hidden !important;
+}
+
+.MuiToolbar-gutters > .MuiStack-root:first-child {
+    background-image: url(https://levy.vip/logo.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: 70px;
+}

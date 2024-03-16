@@ -1,0 +1,10 @@
+# created by virtualenv automatically
+.idea
+.env
+venv
+bin
+lib
+pyvenv.cfg
+.Python
+include
+share
