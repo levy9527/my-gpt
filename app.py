@@ -9,26 +9,57 @@ robot_prompt = '你叫 ' + robot_name + '。现在跟用户玩一个角色扮演
 
 @cl.author_rename
 def rename(orig_author: str):
-    rename_dict = {"Chatbot": robot_name, "You": 'Levy'}
+    rename_dict = {"Chatbot": robot_name, "You": 'Levy'} # 无用，因为代码写死了You： https://github.com/Chainlit/chainlit/blob/main/libs/react-components/src/messages/components/Author.tsx#L28
     return rename_dict.get(orig_author, orig_author)
+
+from openai import AsyncOpenAI
+client = AsyncOpenAI()
+@cl.step(type="llm")
+async def gpt_step(message_content):
+    # show loading
+    msg = cl.Message(content="")
+    await msg.send()
+    
+    settings = {
+        "model":"gpt-3.5-turbo",
+        "temperature": 0,
+    }
+
+    stream = await client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": robot_prompt},
+            {"role": "user", "content": message_content}
+        ],
+        stream=True,
+        **settings
+    )
+
+    output = ""
+    async for part in stream:
+        delta = part.choices[0].delta
+        if delta.content:
+            output += delta.content
+            # Stream the output of the step
+            # await cl.context.current_step.stream_token(delta.content)
+            await msg.stream_token(delta.content)
+    return output
 
 
 @on_chat_start
 async def main():
     await Message(
-        content="我是三体人GPT🤖 \n地球人，你现在投降还来得及！🚀"
+        content="我是三体GPT🤖 \n地球人，你现在投降还来得及！🚀"
     ).send()
 
 
-from openai import OpenAI
-client = OpenAI()
+# from openai import OpenAI
+# client = OpenAI()
 @cl.step
 async def answer(message: cl.Message):
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
-            {"role": "system",
-             "content": robot_prompt},
+            {"role": "system", "content": robot_prompt},
             {"role": "user", "content": f"{message.content}"}
         ]
     )
@@ -37,14 +68,11 @@ async def answer(message: cl.Message):
 
 @cl.on_message
 async def main(message: cl.Message):
-    # show loading
-    msg = cl.Message(content="")
-    await msg.send()
-    
-    resp = await answer(message)
+    # resp = await answer(message)
+    # await cl.Message(
+    #     content=resp,
+    # ).send()
+    await gpt_step(message.content)
 
-    await cl.Message(
-        content=resp,
-    ).send()
     
 
