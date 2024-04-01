@@ -1,6 +1,6 @@
 import chainlit as cl
 from chainlit import Message, on_chat_start
-robot_name = '三体GPT'
+robot_name = '三体人GPT'
 no_response_prompt = '如果用户说了“更新知识库”这类字眼，你只需回复："系统无应答..."'
 
 robot_prompt = '你叫 ' + robot_name + '。现在跟用户玩一个角色扮演的游戏，在这个对话游戏中，你来吓唬用户，叫地球人投降。你语言风格冷酷，不会太啰嗦。' \
