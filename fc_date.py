@@ -1,3 +1,4 @@
+from typing_extensions import TypedDict
 import datetime
 import json
 import sys
@@ -8,8 +9,7 @@ load_dotenv()
 from openai import OpenAI
 client = OpenAI()
 
-@dataclass
-class DateDistance():
+class DateDistance(TypedDict):
     type: str
     distance: int
 
@@ -53,16 +53,16 @@ def get_date_distance(message: str) -> DateDistance:
 def get_formatted_date(date_distance: DateDistance):
     today = datetime.datetime.today()
     '''get formatted date string based on date_distance'''
-    if date_distance.type == 'year':
-        return str(today.year + date_distance.distance)
-    if date_distance.type == 'month':
-        date = today.replace(month=today.month + date_distance.distance)
+    if date_distance['type'] == 'year':
+        return str(today.year + date_distance['distance'])
+    if date_distance['type'] == 'month':
+        date = today.replace(month=today.month + date_distance['distance'])
         return date.strftime('%Y-%m')
-    if date_distance.type == 'day':
-        date = today.replace(day=today.day + date_distance.distance)
+    if date_distance['type'] == 'day':
+        date = today.replace(day=today.day + date_distance['distance'])
         return date.strftime('%Y-%m-%d')
-    if date_distance.type == 'week':
-        date = today + datetime.timedelta(days=date_distance.distance * 7)
+    if date_distance['type'] == 'week':
+        date = today + datetime.timedelta(days=date_distance['distance'] * 7)
         week_range = get_week_range(date)
         return week_range[0] + ',' + week_range[1]
 
