@@ -18,7 +18,3 @@
 [aria-label="Copy"]{
      display: none !important;
 }
-
-button[role="presentation"] {
-     display: none !important;
-}
