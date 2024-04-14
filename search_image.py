@@ -11,7 +11,7 @@ SERPER_SEARCH_ENDPOINT = "https://google.serper.dev/search"
 REFERENCE_COUNT = 1
 
 
-def search_with_serper(query: str, subscription_key: str = os.environ['SERPER_API_KEY']):
+def search_image(query: str, subscription_key: str = os.environ['SERPER_API_KEY']):
   """
   Search related content from the internet
   """
@@ -54,7 +54,7 @@ def search_with_serper(query: str, subscription_key: str = os.environ['SERPER_AP
 
 if __name__ == '__main__':
   print(
-    search_with_serper('来张真理医生的图片')
+    search_image('来张真理医生的图片')
   )
 
 import chainlit as cl
@@ -87,7 +87,7 @@ async def gpt_step(message_content):
     from llama_index.agent.openai import OpenAIAgent
 
     from llama_index.core.tools import FunctionTool
-    tool_search = FunctionTool.from_defaults(fn=search_with_serper)
+    tool_search = FunctionTool.from_defaults(fn=search_image)
     tools = [tool_search]
 
     agent = OpenAIAgent.from_tools(tools, llm=llm, verbose=True, system_prompt=system_prompt)
