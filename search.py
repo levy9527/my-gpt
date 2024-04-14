@@ -11,9 +11,9 @@ SERPER_SEARCH_ENDPOINT = "https://google.serper.dev/search"
 REFERENCE_COUNT = 8
 
 
-def search_text(query: str, subscription_key: str = os.environ['SERPER_API_KEY']):
+def search_answer(query: str, subscription_key: str = os.environ['SERPER_API_KEY']):
   """
-  Search related content from the internet
+  Search related content or answer from the internet
   """
   payload = json.dumps({
     "q": query,
@@ -65,7 +65,7 @@ def search_text(query: str, subscription_key: str = os.environ['SERPER_API_KEY']
 
 if __name__ == '__main__':
   print(
-    search_text('叔叔我啊，这里叔叔是指谁？')
+    search_answer('叔叔我啊，这里叔叔是指谁？')
   )
 
 import chainlit as cl
@@ -99,7 +99,7 @@ async def gpt_step(message_content):
     from llama_index.agent.openai import OpenAIAgent
 
     from llama_index.core.tools import FunctionTool
-    tool_search = FunctionTool.from_defaults(fn=search_text)
+    tool_search = FunctionTool.from_defaults(fn=search_answer)
     tools = [tool_search]
 
     agent = OpenAIAgent.from_tools(tools, llm=llm, verbose=True, system_prompt=system_prompt)
