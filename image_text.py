@@ -8,7 +8,8 @@ load_dotenv()
 from openai import OpenAI
 client = OpenAI()
 
-from chroma_multi_modal import query_image_by_uri, query_image_by_text
+from chroma_multi_modal import query_image_by_uri, query_image_by_text, init_Aventurine
+init_Aventurine()
 
 
 # deprecated, 理由：太贵

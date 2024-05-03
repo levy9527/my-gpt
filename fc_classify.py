@@ -20,12 +20,16 @@ return OTHER
 """
 
 from openai import OpenAI
+settings = {
+  "model": "gpt-3.5-turbo-1106",
+  "temperature": 0,
+}
 
 
 def is_search_image(message):
   client = OpenAI()
   completion = client.chat.completions.create(
-    model="gpt-3.5-turbo",
+    **settings,
     messages=[
       {"role": "system", "content": system_prompt},
       {

@@ -9,6 +9,11 @@ load_dotenv()
 from openai import OpenAI
 client = OpenAI()
 
+settings = {
+    "model": "gpt-3.5-turbo-1106",
+    "temperature": 0,
+}
+
 class DateDistance(TypedDict):
     type: str
     distance: int
@@ -36,7 +41,7 @@ def get_date_distance(message: str) -> DateDistance:
     }
     import datetime
     resp = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        **settings,
         messages=[
             {
                 "role": "user",
