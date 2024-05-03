@@ -18,3 +18,7 @@
 [aria-label="Copy"]{
      display: none !important;
 }
+
+img.inline-image {
+    min-width: 580px;
+}

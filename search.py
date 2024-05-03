@@ -13,7 +13,7 @@ REFERENCE_COUNT = 8
 
 def search_answer(query: str, subscription_key: str = os.environ['SERPER_API_KEY']):
   """
-  Search related content or answer from the internet
+  Search related content or answer from the internet when you encounter somthing you don't know
   """
   payload = json.dumps({
     "q": query,
