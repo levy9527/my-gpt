@@ -11,9 +11,13 @@ SERPER_SEARCH_ENDPOINT = "https://google.serper.dev/search"
 REFERENCE_COUNT = 8
 
 
-def search_answer(query: str, subscription_key: str = os.environ['SERPER_API_KEY']):
+def search_answer(query: str, subscription_key: str = None):
+  if not subscription_key:
+    subscription_key = os.environ['SERPER_API_KEY']
+    
   """
   Search related content or answer from the internet when you encounter somthing you don't know
+  当用户与你玩梗、双关语、打哑谜时，适用这个方法来搜索
   """
   payload = json.dumps({
     "q": query,

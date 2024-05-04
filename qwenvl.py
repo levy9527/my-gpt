@@ -33,4 +33,4 @@ def explain_image_by_qwenvl(image):
 
 if __name__ == '__main__':
     prefix = 'file:///Users/levy/PycharmProjects/my-gpt/images/'
-    explain_image_by_qwenvl(f'{prefix}Firefly.png')
+    explain_image_by_qwenvl(f'{prefix}Firefly1.png')

@@ -4,10 +4,10 @@ from openai import OpenAI
 client = OpenAI()
 
 system_prompt = '''
-You're a good writer to beautify text based on the input.
+Please revise the text based on the input.
 You'll receive a long text with a short text(this can be a summary or a note written by human).
 You should combine two text into one, which will be used as the description for a scene or music.
-Please speak Chinese.
+Please use Chinese and use concise and oral tone, which can appeal to other viewers.
 '''
 
 

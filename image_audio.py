@@ -1,4 +1,7 @@
 import logging
+
+from search import search_answer
+
 logging.basicConfig(level=logging.INFO)
 
 from dotenv import load_dotenv
@@ -10,17 +13,21 @@ load_dotenv()
 from openai import OpenAI
 client = OpenAI()
 
-from chroma_robin import init_Robin, query_audio_by_text
+from chroma_robin import init_Robin, query_audio_by_text, query_by_text
+
 init_Robin()
 
 
 robot_name = '三体人GPT'
 opening_prompt = "我是三体人GPT🤖 \n我懂得了欣赏音乐，现在是知更鸟的粉丝🎶"
-system_prompt = '你叫 ' + robot_name + '。现在跟用户玩一个相关的问答游戏，在这个对话游戏中，所有内容都与《崩坏：星穹铁道》这个游戏有关。请根据上下文或使用恰当的工具，来应对用户提的问题' \
-                                       '你需要根据情况来处理以下情况：用户有可能问纯文字问题，也有可能会在问题中带上图片，图片格式为：uri: xxx' \
-                                       '请尽量让对话变得生动、有趣。你的目标是，通过搜索获得最新、最贴切的与游戏相关的回答，从而在正确回答后，让用户对你的能力发出赞叹。'
+system_prompt = '你叫 ' + robot_name + '。现在跟用户玩进行一个对话，在这个对话中，所有内容都与《崩坏：星穹铁道》这个游戏有关。' \
+                                       '请根据上下文或使用恰当的工具，获得更多的信息，以便更好的理解用户。' \
+                                       '用户会与你讨论游戏人物、音乐、剧情、心理感受等话题，你要能照顾对方的感受，回应对方的情绪。' \
+                                       '对方有时会说的比较少，你最好能直接猜出对方的想法，这才能给对方惊喜，让用户觉得你很懂他。' \
+                                       '请尽量让对话变得生动、有活力，展示你的共情能力。同时简洁，不要啰嗦。如果用户夸奖你，跟你开玩笑，请深度幽默地回应。'
 import chainlit as cl
 settings = {
+  # "model": "gpt-3.5-turbo",
   "model": "gpt-3.5-turbo-1106",
   "temperature": 0,
 }
@@ -31,28 +38,49 @@ llm = OpenAI(**settings)
 from llama_index.agent.openai import OpenAIAgent
 from llama_index.core.tools import FunctionTool
 
-tool_explain_img = FunctionTool.from_defaults(fn=query_audio_by_text)
-tools = [tool_explain_img]
+tool_search = FunctionTool.from_defaults(fn=search_answer)
+tool_explain_img = FunctionTool.from_defaults(fn=query_by_text)
+tools = [
+  # search_answer,
+  tool_explain_img
+]
 
-agent = OpenAIAgent.from_tools(tools, llm=llm, verbose=True, system_prompt=system_prompt)
-
+chat_history = []
 
 
 @cl.step(type="llm")
-async def gpt_step(message_content, images):
-  logging.info(message_content, images)
-  
-  if images:
-    message_content += f'\n图片相关信息: uri: {images[0]}'
-  
+async def chat(message_content):
   # show loading
   msg = cl.Message(content="", elements=[], author=robot_name)
   await msg.send()
   
-  resp = agent.stream_chat(message_content)
+  agent = OpenAIAgent.from_tools(tools, llm=llm, verbose=True, system_prompt=system_prompt, chat_history=chat_history)
+  resp = agent.stream_chat(message_content,
+                           # chat_history=chat_history,
+                           # tool_choice="query_by_text"
+                           )
   
   for chunk in resp.response_gen:
     await msg.stream_token(chunk)
+    
+  # 暂特殊不处理 agent 的逻辑，为演示，这里先写死了。
+  if '另一个' in message_content:
+    result = query_by_text(text='使一颗心免于哀伤', exclude_keyword='知更鸟')
+    images = result['metadatas'][0][0]['images'].split(';')
+    desc = result['metadatas'][0][0]['desc'].split(';')
+    
+    elements = []
+    for i,path in enumerate(images):
+      elements.append(
+        cl.Image(path=path, display="inline", name=desc[i])
+      )
+    
+    msg.elements = [elements[0]]
+    await msg.update()
+  
+    await cl.sleep(0.5)
+    image = cl.Message(content="", elements=[elements[1]], author=robot_name)
+    await image.send()
 
 
 @cl.on_message
@@ -70,20 +98,26 @@ async def main(message: cl.Message):
     text = qwenvl.explain_image_by_qwenvl(images[0])
     
     result = query_audio_by_text(text)
-    audio_element = cl.Audio(path=result['metadatas'][0][0]['mp3'], display="inline")
+    content = result['metadatas'][0][0]['desc']
+    audio_element = cl.Audio(path=result['metadatas'][0][0]['mp3'], name=content, display="inline")
     msg.elements = [audio_element]
     await msg.update()
     
-    msg = cl.Message(content="")
-    await msg.send()
-    stream = fc_explain_audio.explain_audio(ai_text=text, human_text=result['metadatas'][0][0]['desc'])
+    # explain = cl.Message(content="", author=robot_name)
+    # stream = fc_explain_audio.explain_audio(ai_text=text, human_text=result['metadatas'][0][0]['desc'])
     
-    for chunk in stream:
-      if chunk.choices[0].delta.content is not None:
-        await msg.stream_token(chunk.choices[0].delta.content)
+    # content = []
+    # for chunk in result['documents'][0][0]:
+      # if chunk.choices[0].delta.content is not None:
+        # data = chunk.choices[0].delta.content
+        # content.append(chunk)
+        # await explain.stream_token(chunk)
+      
+    from llama_index.core.types import ChatMessage, MessageRole
+    chat_history.append(ChatMessage(role = MessageRole.ASSISTANT, content = content))
     return
   
-  await gpt_step(message.content, images)
+  await chat(message.content)
 
 @cl.on_chat_start
 async def start():
